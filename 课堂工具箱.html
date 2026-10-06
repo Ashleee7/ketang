@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>课堂工具箱 · 点名 分组 抽题 计时 计分</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F5F8;--ink:#14243B;--card:#fff;--line:#DCE2EA;--acc:#0F766E;--onacc:#fff;--soft:#DDF1EE;--muted:#5E6B7D;--navy:#0F2A47;--amber:#B45F06;--dot:#CDD6E2;
+--serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E141C;--ink:#E8EDF4;--card:#16202B;--line:#2A3645;--acc:#34D3BE;--onacc:#06231F;--soft:#15332F;--muted:#9AA7B6;--navy:#1A3556;--amber:#FBBF24;--dot:#1E2B3B}}
+:root[data-theme="dark"]{--bg:#0E141C;--ink:#E8EDF4;--card:#16202B;--line:#2A3645;--acc:#34D3BE;--onacc:#06231F;--soft:#15332F;--muted:#9AA7B6;--navy:#1A3556;--amber:#FBBF24;--dot:#1E2B3B}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font:16px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding-bottom:28px;background:radial-gradient(var(--dot) 1.2px,transparent 1.5px) 0 0/22px 22px var(--bg)}
+h1,.nm,.timer,.sc{font-family:var(--serif);font-weight:800}
+.wrap{max-width:780px;margin:0 auto;padding:0 16px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+[hidden]{display:none!important}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:16px 0 18px;padding:22px 24px;border-radius:18px;color:#fff;
+background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='140' viewBox='0 0 220 140' fill='none' stroke='white' stroke-opacity='.14' stroke-width='1.5'%3E%3Cpath d='M10 70q15-40 30 0t30 0t30 0'/%3E%3Ccircle cx='160' cy='34' r='18'/%3E%3Cpath d='M160 34h18M160 34l-12-12M26 122h52V94z'/%3E%3Cg transform='translate(170 100)'%3E%3Cellipse rx='24' ry='9'/%3E%3Cellipse rx='24' ry='9' transform='rotate(60)'/%3E%3Cellipse rx='24' ry='9' transform='rotate(120)'/%3E%3C/g%3E%3Ctext x='104' y='40' font-size='22' font-family='serif' fill='white' fill-opacity='.14' stroke='none'%3E%CF%80%3C/text%3E%3Ctext x='108' y='126' font-size='22' font-family='serif' fill='white' fill-opacity='.14' stroke='none'%3E%E2%88%91%3C/text%3E%3C/svg%3E") 0 0/220px 140px,linear-gradient(120deg,var(--navy),#1c5a73)}
+h1{font-size:34px;line-height:1.15;margin:0}
+.sub{margin:4px 0 0;color:#c8d6e6;font-size:14px}
+header .btn{background:#fff;color:#0F2A47;border-color:#fff}
+.btn{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 16px;color:var(--ink)}
+.btn:hover{border-color:var(--acc)}
+.btn.red{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+.btn.big{padding:12px 32px;font-size:18px;font-weight:600}
+.roster{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px;margin-bottom:14px}
+.roster summary{cursor:pointer;font-size:15px}
+.roster textarea{width:100%;height:110px;margin-top:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical}
+.panel .roster{text-align:left;margin:14px 0 0}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.tab{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:8px 14px;font-size:15px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-selected="true"]{color:var(--acc);border-bottom-color:var(--acc);font-weight:700}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 18px;text-align:center;min-height:340px;box-shadow:0 1px 3px rgba(15,42,71,.08)}
+.hint{color:var(--muted);font-size:14px;margin:8px 0}
+.ctrl{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:14px 0}
+.ctrl label{font-size:14px;color:var(--muted)}
+.ctrl input[type=number],.ctrl select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px;width:90px}
+.ctrl select{width:auto}
+.nm{font-size:clamp(72px,18vw,160px);line-height:1.15;min-height:1.2em;margin:6px 0;word-break:break-all}
+.nm.hit{color:var(--acc);animation:pop .3s ease-out}
+@keyframes pop{from{transform:scale(.94)}to{transform:none}}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:8px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:14px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+.qcard{position:relative;overflow:hidden;background:var(--bg);border:1px solid var(--line);border-left:6px solid var(--amber);border-radius:14px;padding:22px 24px;min-height:210px;display:flex;flex-direction:column;justify-content:center;gap:10px;text-align:left}
+.qcard::after{content:"?";position:absolute;right:14px;bottom:-34px;font:800 190px/1 var(--serif);color:var(--ink);opacity:.05;pointer-events:none}
+.tag{margin:0;font-size:14px;color:var(--amber);font-weight:700;min-height:1.4em}
+.nm.q{font-size:clamp(24px,5vw,38px);line-height:1.5;font-weight:700;min-height:0;margin:0;word-break:normal}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;text-align:left;margin-top:12px}
+.g{background:var(--bg);border-radius:10px;padding:10px 14px}
+.g h3{margin:0 0 4px;font-size:15px;color:var(--acc)}
+.g p{margin:0;font-size:15px}
+.timer{font-size:clamp(80px,22vw,180px);line-height:1.05;margin:4px 0;font-variant-numeric:tabular-nums}
+.timer.done{color:var(--acc);animation:blink .5s steps(2) 6}
+@keyframes blink{50%{opacity:.2}}
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:14px}
+.t{background:var(--bg);border-radius:12px;padding:12px}
+.t.lead{background:var(--soft)}
+.t input{width:100%;text-align:center;background:transparent;border:0;border-bottom:1px dashed var(--line);font-size:16px;font-weight:600;padding:2px}
+.sc{font-size:clamp(54px,9vw,84px);line-height:1.1;margin:6px 0}
+.t .r{display:flex;gap:6px;justify-content:center}
+.t .r button{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:2px 12px;font-size:17px;font-weight:600}
+.strip{display:grid;grid-template-columns:auto 1fr;gap:12px;margin-bottom:12px}
+@media (max-width:560px){.strip{grid-template-columns:1fr}}
+.cdbox{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--acc);border-radius:14px;padding:10px 18px;text-align:center}
+.cdbox b{font:800 44px/1.1 var(--serif);color:var(--acc)}
+.qbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 18px;display:flex;align-items:center;font-family:var(--serif);font-size:17px;line-height:1.6;cursor:pointer}
+.ctrl input[type=text],.ctrl input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.podium{background:var(--navy);color:#fff;border-radius:8px;padding:4px;margin:0 auto 12px;width:46%;font-size:14px}
+.seatrow{display:flex;gap:6px;margin-bottom:6px}
+.seat{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 2px;font-size:14px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat.gap{margin-left:14px}
+.seat.empty{opacity:.35}
+.exit{display:none;position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px;z-index:20}
+body.present .exit{display:block}
+body.present header,body.present .roster,body.present footer{display:none!important}
+body.present .panel{min-height:80vh;display:flex;flex-direction:column;justify-content:center;border:0}
+body.present .nm.q{font-size:clamp(32px,6vw,64px)}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:22px 0 4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<button class="btn exit" id="exit" type="button">退出大屏</button>
+<div class="wrap">
+  <header>
+    <div><h1>课堂工具箱</h1><p class="sub">点名、抽题、分组、换座位、值日、计时、计分,一个页面搞定</p></div>
+    <button class="btn red" id="present" type="button">投影大屏</button>
+  </header>
+
+  <section class="strip">
+    <div class="cdbox"><div class="hint" style="margin:0">距离<span id="cdn">高考</span>还有</div><div><b id="cdd">0</b> 天</div></div>
+    <div class="qbox" id="qt" title="点击换一句" role="button" tabindex="0"></div>
+  </section>
+  <details class="roster" id="cdset"><summary>修改倒数日(默认高考;中考日期各地不同,可以自己改)</summary>
+    <div class="ctrl" style="justify-content:flex-start;margin:10px 0 0"><label>名称 <input type="text" id="cdname" style="width:130px"></label><label>日期 <input type="date" id="cddate"></label></div>
+  </details>
+
+
+  <div class="layout">
+    <main>
+      <details class="roster" id="rosterBox" open>
+        <summary>班级学号(共 <span id="rc">0</span> 人)· 点开可改人数或换成姓名</summary>
+        <div class="ctrl" style="justify-content:flex-start;margin:10px 0 0">
+          <label>班级人数 <input type="number" id="cn" min="1" max="100" value="40"></label>
+          <button class="btn red" id="nums" type="button">生成学号</button>
+        </div>
+        <textarea id="rt" placeholder="1号&#10;2号&#10;3号(也可以改成姓名,一行一个)" aria-label="名单"></textarea>
+        <div class="ctrl" style="justify-content:flex-start;margin:8px 0 0">
+          <button class="btn" id="demo" type="button">换成示例姓名</button>
+          <button class="btn" id="clr" type="button">清空</button>
+        </div>
+      </details>
+
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-t="pick" aria-selected="true"><svg viewBox='0 0 24 24' aria-hidden='true'><circle cx='12' cy='12' r='9'/><circle cx='12' cy='12' r='4'/></svg>随机点名</button>
+        <button class="tab" role="tab" data-t="draw" aria-selected="false"><svg viewBox='0 0 24 24' aria-hidden='true'><path d='M13 2 4 14h7l-1 8 9-12h-7z'/></svg>抽题挑战</button>
+        <button class="tab" role="tab" data-t="group" aria-selected="false"><svg viewBox='0 0 24 24' aria-hidden='true'><circle cx='9' cy='8' r='3'/><circle cx='17' cy='9' r='2.5'/><path d='M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5'/></svg>随机分组</button>
+        <button class="tab" role="tab" data-t="time" aria-selected="false"><svg viewBox='0 0 24 24' aria-hidden='true'><circle cx='12' cy='13' r='8'/><path d='M12 9v4l3 2M9 2h6'/></svg>倒计时</button>
+        <button class="tab" role="tab" data-t="score" aria-selected="false"><svg viewBox='0 0 24 24' aria-hidden='true'><path d='M5 20V10M12 20V4M19 20v-7'/></svg>小组计分</button>
+        <button class="tab" role="tab" data-t="seat" aria-selected="false"><svg viewBox='0 0 24 24' aria-hidden='true'><rect x='4' y='4' width='6' height='6' rx='1'/><rect x='14' y='4' width='6' height='6' rx='1'/><rect x='4' y='14' width='6' height='6' rx='1'/><rect x='14' y='14' width='6' height='6' rx='1'/></svg>换座位</button>
+        <button class="tab" role="tab" data-t="duty" aria-selected="false"><svg viewBox='0 0 24 24' aria-hidden='true'><rect x='3' y='5' width='18' height='16' rx='2'/><path d='M3 10h18M8 3v4M16 3v4'/></svg>值日表</button>
+      </div>
+
+      <section class="panel">
+        <div id="t-pick">
+          <div class="nm" id="nm">?</div>
+          <p class="hint" id="rem"></p>
+          <div class="ctrl">
+            <button class="btn red big" id="go" type="button">开始点名</button>
+          </div>
+          <label class="hint"><input type="checkbox" id="norep" checked> 不重复(点过的不再被点)</label>
+          <button class="btn" id="rst" type="button" style="margin-left:8px">重置</button>
+        </div>
+
+        <div id="t-group" hidden>
+          <div class="ctrl">
+            <select id="gm" aria-label="分组方式"><option value="k">按组数分</option><option value="s">按每组人数分</option></select>
+            <input type="number" id="gn" min="2" max="60" value="4" aria-label="数量">
+            <button class="btn red big" id="gg" type="button">开始分组</button>
+          </div>
+          <div class="ctrl"><label><input type="checkbox" id="gname" checked> 趣味队名</label><label><input type="checkbox" id="grole"> 组内分角色(组长/记录员/汇报员/计时员)</label></div>
+          <div class="groups" id="groups"></div>
+          <div class="ctrl"><button class="btn" id="gc" type="button" hidden>复制分组结果</button></div>
+        </div>
+
+        <div id="t-draw" hidden>
+          <div class="chips" id="chips" role="group" aria-label="题目类型"></div>
+          <div class="ctrl" style="margin-top:0"><label>难度 <select id="dl"><option value="0">全部</option><option value="1">★ 入门</option><option value="2">★★ 进阶</option><option value="3">★★★ 挑战</option></select></label></div>
+          <div class="qcard"><p class="tag" id="dc"></p><div class="nm q" id="dq">点下面的按钮抽题</div></div>
+          <div class="ctrl"><button class="btn red big" id="dd" type="button">抽一个</button></div>
+          <details class="roster"><summary>我的题库(一行一个,选「我的题库」类型时使用)</summary>
+            <textarea id="dt" aria-label="我的题库" placeholder="写上你自己学科的题,比如:用三句话讲清楚今天的公式"></textarea>
+          </details>
+        </div>
+
+        <div id="t-seat" hidden>
+          <div class="ctrl" style="margin-top:0">
+            <label>每排 <input type="number" id="scol" min="1" max="12" value="6"> 列</label>
+            <label>共 <input type="number" id="srow" min="1" max="15" value="7"> 排</label>
+            <label>过道 <select id="saisle"><option value="0">无</option><option value="2" selected>每 2 列</option><option value="3">每 3 列</option></select></label>
+          </div>
+          <div class="ctrl"><button class="btn red big" id="sg" type="button">排座位</button><button class="btn" id="sc2" type="button" hidden>复制座位表</button></div>
+          <div id="seats"></div>
+        </div>
+
+        <div id="t-duty" hidden>
+          <div class="ctrl" style="margin-top:0"><label>值日任务(用顿号隔开) <input type="text" id="dtask" style="width:min(100%,340px)" value="擦黑板、扫地、拖地、倒垃圾、整理讲台、关灯关窗"></label></div>
+          <div class="ctrl"><button class="btn red big" id="dg" type="button">生成值日表</button></div>
+          <div class="ctrl" id="dops" hidden><button class="btn" id="dshift" type="button">整体顺延一天</button><button class="btn" id="dswap" type="button">组内换任务</button><button class="btn" id="dcopy" type="button">复制值日表</button></div>
+          <div class="groups" id="dutyg"></div>
+        </div>
+
+        <div id="t-time" hidden>
+          <div class="timer" id="tm">05:00</div>
+          <div class="ctrl" id="pre"></div>
+          <div class="ctrl">
+            <input type="number" id="cm" min="1" max="180" placeholder="分钟" aria-label="自定义分钟">
+            <button class="btn" id="cs" type="button">设置</button>
+            <button class="btn red big" id="ts" type="button">开始</button>
+            <button class="btn" id="tr" type="button">重置</button>
+          </div>
+        </div>
+
+        <div id="t-score" hidden>
+          <div class="ctrl">
+            <label>小组数 <select id="tn"></select></label>
+            <button class="btn" id="sr" type="button">分数清零</button>
+          </div>
+          <div class="teams" id="teams"></div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+  <footer>名单和分数只保存在这台设备的浏览器里,不会上传。</footer>
+</div>
+
+
+<script>
+const $=id=>document.getElementById(id);
+const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let ac=null;
+function beep(n){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();for(let i=0;i<n;i++){const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+i*.35;o.frequency.value=880;g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.26)}}catch(e){}}
+
+/* 名单 */
+let R=ld("roster",null),pool=[];
+if(!R)R=Array.from({length:40},(_,i)=>i+1+"号");
+const parse=t=>[...new Set(t.split(/[\n,\uFF0C\u3001;\uFF1B\s]+/).map(s=>s.trim()).filter(Boolean))];
+function setR(list){R=list;pool=[];sv("roster",R);$("rc").textContent=R.length;updRem()}
+$("rt").value=R.join("\n");$("rc").textContent=R.length;$("cn").value=R.length||40;
+if(R.length)$("rosterBox").open=false;
+$("rt").oninput=e=>setR(parse(e.target.value));
+$("demo").onclick=()=>{const l=["林小满","陈思远","周可乐","王一诺","李安然","赵星野","孙悦宁","吴知夏","郑浩然","钱多多"];$("rt").value=l.join("\n");setR(l)};
+$("nums").onclick=()=>{const n=Math.max(1,Math.min(100,parseInt($("cn").value)||40)),l=Array.from({length:n},(_,i)=>i+1+"号");$("rt").value=l.join("\n");setR(l)};
+$("clr").onclick=()=>{$("rt").value="";setR([]);$("nm").textContent="?"};
+
+/* 标签 */
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===b));
+  ["pick","group","draw","time","score","seat","duty"].forEach(k=>$("t-"+k).hidden=k!==b.dataset.t);
+});
+const need=()=>{if(!R.length){$("rosterBox").open=true;$("rt").focus();return true}return false};
+
+/* 点名 */
+let busy=false;
+function updRem(){$("rem").textContent=R.length?($("norep").checked?"本轮还剩 "+(pool.length||R.length)+" 人":"共 "+R.length+" 人"):"先在上面填好名单"}
+$("norep").onchange=()=>{pool=[];updRem()};
+$("rst").onclick=()=>{pool=[];$("nm").textContent="?";$("nm").classList.remove("hit");updRem()};
+$("go").onclick=()=>{
+  if(need()||busy)return;busy=true;
+  if(!$("norep").checked||!pool.length)pool=R.slice();
+  const target=pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+  const nm=$("nm");nm.classList.remove("hit");
+  let d=50;
+  (function tick(){
+    nm.textContent=R[Math.floor(Math.random()*R.length)];
+    d*=1.2;
+    if(d<420)setTimeout(tick,d);
+    else{nm.textContent=target;nm.classList.add("hit");busy=false;if(!$("norep").checked)pool=[];updRem()}
+  })();
+};
+updRem();
+
+/* 分组 */
+let gr=[],gt=[];
+const TN=["飞天小火箭","快乐小海豚","超能大白鲨","不怕困难队","奶茶续命组","智多星队","闪电猎豹队","彩虹独角兽","星辰大海队","无敌小飞象","元气满满队","学霸养成队","冲鸭队","打call战队","银河护卫队","向日葵小队"],RL=["组长","记录员","汇报员","计时员"];
+$("gg").onclick=()=>{
+  if(need())return;
+  const a=shuffle(R.slice()),n=Math.max(1,parseInt($("gn").value)||2);
+  const k=$("gm").value==="k"?Math.min(n,a.length):Math.ceil(a.length/n);
+  gr=Array.from({length:k},()=>[]);a.forEach((x,i)=>gr[i%k].push(x));
+  const names=$("gname").checked?shuffle(TN.slice()):[];
+  gt=gr.map((g,i)=>({title:names[i]||("第"+(i+1)+"组"),mem:g.map((x,j)=>$("grole").checked&&j<RL.length?x+"("+RL[j]+")":x)}));
+  $("groups").innerHTML=gt.map(o=>'<div class="g"><h3>'+esc(o.title)+' · '+o.mem.length+'人</h3><p>'+o.mem.map(esc).join("、")+'</p></div>').join("");
+  $("gc").hidden=false;$("gg").textContent="重新分组";
+};
+$("gc").onclick=async()=>{
+  try{await navigator.clipboard.writeText(gt.map(o=>o.title+":"+o.mem.join("、")).join("\n"));$("gc").textContent="已复制 ✓"}
+  catch(e){$("gc").textContent="复制失败,请截图"}
+  setTimeout(()=>$("gc").textContent="复制分组结果",1800);
+};
+
+/* 抽题挑战 */
+const CAT={
+"脑力风暴":["用 60 秒说明:一张纸怎么做到比教室还高(只说方案)|3","如果全世界的时钟都慢了一小时,说出三个后果|2","设计一个只用三个词就能让陌生人听懂的求救暗号|2","发明一项新运动,规则必须一分钟内学会|3","只用一支笔和一张纸,怎么测出教室的高度?说出两种方法|3","如果人类不需要睡觉,学校会变成什么样?|2","一座岛只有一个水源,三个村庄怎么分才公平?|3","把「时间」解释给一个没见过钟表的人听|3","30 秒内想出十种回形针的用途|1"],
+"极限表达":["30 秒介绍你的书包,不许出现「的」字|3","说一段 20 秒的话,不许用「我」「然后」「就是」|3","用成语接龙讲一个小故事,每句必须带一个成语|2","只用问句讲完一件今天发生的事|3","15 秒推销一支普通铅笔,让全班想买|2","把今天的知识点讲成一则 15 秒的短视频口播|2","用天气来形容你现在的状态,并说出理由|1","用你的学号编一句口诀,让大家记住你|2","一分钟讲清一个刚学会的概念,同桌能复述才算过关|3"],
+"辩论擂台":["正反方各 30 秒:校园里应不应该允许带手机?|2","辩题:考试是不是最公平的评价方式?选一个立场陈词|3","辩题:AI 能不能替你写作业?说出两个理由|2","辩题:体育课应不应该改成可选修?30 秒陈词|2","辩题:先成功还是先成长?站队并举一个例子|3","辩题:午休睡觉重要还是学习重要?|1","抽到的立场不是你的真实想法,也要说出两个有力的理由|3","对前一位同学的观点,提一个有礼貌的反驳|3","用「同意……但是……」的句式回应前面同学的发言|2"],
+"逻辑推理":["三个人里只有一个说真话,编一组对话让别人找出谁在说谎|3","二十问:老师心里想一件物品,全班最多问 20 个是非题来猜|2","找规律:2、6、12、20,下一个数是多少?为什么?|2","5 台机器 5 分钟做 5 个零件,100 台机器做 100 个要几分钟?|2","绳子对折再对折,从中间剪一刀,会变成几段?|2","说出一个看起来合理但有漏洞的结论,让同学找漏洞|3","用三个条件设计一个谜语,让大家猜是什么|2","说出一道你最近想不通的题,让同学帮你找思路|2","两个人分一个蛋糕,怎么分才能让双方都觉得公平?|3"],
+"创意设计":["2 分钟为学校设计一个新社团,说出名字、口号和第一次活动|3","给教室设计一个「安静信号」,不说话全班都能懂|2","为今天的课设计一句 5 个字的海报标语|1","设计一个帮同学记住今天知识点的小游戏|3","60 秒在草稿纸上画出今天知识点的流程图,给同桌看|2","给一件校园物品(比如椅子)设计一个新功能,说明谁会用|2","想一个能减少午餐窗口排队的办法|3","为考试周设计一个让同学不焦虑的小仪式|2","设计一个让新同学三天内融入班级的方案|3"],
+"学以致用":["举一个今天的知识明天就能用上的例子|2","出一道今天知识点的陷阱题,让同桌找出错在哪|3","假设你是今天知识点的发明人,怎么向别人推销它?|2","说出今天内容最容易被误解的地方,并纠正它|3","把今天的知识点和另一门学科连起来,说出联系|3","如果要给小学生讲今天的内容,你会怎么讲?|2","三句话以内讲清今天最难的一点|2","预测一道今天内容可能考到的题,并写出评分标准|3","如果今天学的内容突然消失,生活会有什么不同?|2"],
+"小组博弈":["小组 2 分钟内想出一个全班没人想到的答案|3","小组每人只能说一个词,合起来必须是一句通顺的话|3","小组用身体摆出一个字或数字,让其他组猜|2","小组抽一个立场,3 分钟准备,1 分钟陈词|3","小组接力讲故事,每人只能补充一句,合成完整故事|2","给其他小组出一道题,答错的小组要提一条改进建议|3","小组说服老师给全班一个小奖励,理由必须合理|2","全组闭眼不说话,按生日从小到大排好队|3","小组用 5 个关键词总结今天内容,再合成一句话|2"]};
+const EX={
+"脑力风暴":["如果你能给学校增加一门新课,会是什么?说出课程内容和第一节课|2","想出一件日常物品的三种完全不同的用途,越离谱越好|1","一分钟内向外星人解释「为什么人类要上学」|3","如果明天起所有手机都消失,你的一天会怎么安排?|2","设计一条从教室到食堂最快的路线,并说明为什么|2","如果颜色有声音,红色听起来是什么样?说出理由|2"],
+"极限表达":["用「如果……就……」连续说三句话,最后一句要让人意外|3","用三个不相关的词(比如雨伞、月亮、作业)编一个 20 秒小故事|3","模仿新闻主播,用播报语气讲今天的天气|1","不用任何形容词,描述你最喜欢的一样东西|3","用一句话介绍今天的课,让没来的同学也想听|2","一口气说出 10 个以「学」开头的词语|1"],
+"辩论擂台":["辩题:校服应该统一还是自由着装?|1","辩题:作业应该取消还是保留?各说一个核心理由|2","辩题:朋友多重要还是知己重要?|2","辩题:失败是成功之母,还是成功的绊脚石?|3","辩题:考试能不能开卷?30 秒陈词|2","用一个例子反驳「努力一定会有回报」,再用一个例子支持它|3"],
+"逻辑推理":["一个房间有 3 个开关,对应隔壁房间 3 盏灯,只能进隔壁房间一次,怎么知道哪个开关对应哪盏灯?|3","8 个外观一样的球,其中一个稍重,用天平最少称几次能找出来?|3","两根不均匀的绳子各烧完要 1 小时,怎么测出 45 分钟?|3","用四个 4 和运算符号,凑出 10、11、12 中的一个|3","说出一个悖论,比如「这句话是假的」,让大家想想为什么|2","最多问四个只能答「是」或「否」的问题,猜出同桌心里想的 1 到 10 的数字|2"],
+"创意设计":["为你们班设计一个班徽,说出图案和寓意|2","设计一个只在下雨天才开放的校园角落|2","给今天的课写一个 30 字以内的电影简介|2","设计一个让大家愿意主动捡起地上垃圾的小机制|3","为学校设计一套新的早操,动作要简单又好玩|2","给你的学科起一个酷炫的外号,并说明为什么|1"],
+"学以致用":["把今天的知识点做成一个表情包,描述画面和文字|2","用今天学的内容解释一个生活里的现象|3","如果今天的内容要上热搜,标题会是什么?|1","为今天的内容编一段 4 句的顺口溜|2","假设你是老师,你会给今天的内容出一道什么题?|2","找出今天内容里最像「魔法」的一点,并解释它背后的道理|3"],
+"小组博弈":["小组用 5 本书和 2 支笔在 1 分钟内搭出最稳的结构|2","小组轮流每人说一个字,凑成一个完整成语,多凑几个|3","小组玩「你说我猜」:描述的人不能说出词语里的任何一个字|3","小组 30 秒内给今天的课起三个标题:严肃的、搞笑的、文艺的|2","小组分饰两个角色,即兴表演 30 秒的对话,主题是今天的知识点|3","全组不说话,只用手势,排成一条按身高排列的队|3"],
+"脑洞冷知识":["假如你变成一支粉笔,你的一天会怎么过?|1","如果你能和历史上任何一个人吃一顿饭,选谁?要问他什么?|2","说一个你觉得全班人都不知道的冷知识,并保证它是真的|3","如果动物会说话,哪种动物最爱抱怨,抱怨什么?|1","如果你是一本教科书的作者,最后一页你会写什么?|2","设想一百年后的教室,说出三个细节|2","如果你能让一个物理定律暂停一天,选哪一个?会发生什么?|3","说一个你曾经以为是对的,后来发现是错的常识|2","如果你能把一种食物变成学习用品,你会怎么变?|1","你认为十年后最没用的一项技能是什么?为什么?|3"],
+"角色扮演":["假装你是今天知识点里的主角,用第一人称自我介绍|2","扮演采访者,采访同桌「今天最难的一道题」|2","扮演天气预报员,预报明天的班级「心情天气」|1","扮演法官,公正地裁决:作业该不该取消?|3","扮演导游,带全班「参观」今天学的内容|2","扮演电台主播,用 20 秒播报一条班级新闻|2","扮演发明家,向评委推销一件根本不存在的发明|3","扮演十年后的你,给现在的自己留一句话|2","扮演美食评论家,点评食堂最近的一道菜|1","扮演老师,讲一道刚学的题,同桌当学生提问|3"],
+"班会话题":["讨论:怎样做到真正的光盘行动,而不只是口号?|2","垃圾分类:我们班的做法还能怎么改进?|2","接到自称是家长朋友的陌生电话,让你转账或透露信息,该怎么办?(防诈骗)|2","夏天防溺水:说出三条你会提醒同学的安全提示|1","时间管理:周末两天,你打算怎么安排作业和休息?|2","诚信考试:如果看到同学作弊,你会怎么做?|3","手机和学习:给我们班订三条大家都能做到的手机约定|2","校园欺凌:发现有同学被孤立,你可以做什么?|3","大课间和跑操:怎样才能让大家更有精神?|1","给班级提一条合理化建议,并说明怎么落实|3"],
+"快问快答":["10 秒内说出 5 个红色的东西|1","10 秒内说出 5 个带「水」的词语|1","10 秒内说出三种职业,并各说一个优点|2","10 秒内说出三个今天课上出现的词|1","10 秒内说出 4 个以「天」字开头的词语|1","5 秒内回答:你最近最想去的地方,理由用一句话|1","10 秒内说出三个今天课上你觉得最重要的字|2","10 秒内用一个词形容你现在的心情,再说理由|1","10 秒内说出两个互为反义词的成语|2","10 秒内说出三个以「不」开头的成语|2"]};
+for(const k in EX)CAT[k]=(CAT[k]||[]).concat(EX[k]);
+let MY=ld("qs2",[]),cur="全部",qp=[],db=false;
+const chipsL=["全部",...Object.keys(CAT),"我的题库"];
+const pq=(x,c)=>{const p=x.split("|");return {t:p[0],c,l:+p[1]||0}};
+const allQ=()=>{
+  const a=cur==="全部"?Object.entries(CAT).flatMap(([c,arr])=>arr.map(x=>pq(x,c))):cur==="我的题库"?MY.map(x=>pq(x,"我的题库")):(CAT[cur]||[]).map(x=>pq(x,cur));
+  const lv=+$("dl").value;return lv?a.filter(o=>!o.l||o.l===lv):a;
+};
+const reset=()=>{qp=[];$("dq").textContent="点下面的按钮抽题";$("dq").classList.remove("hit");$("dc").textContent=""};
+function renderChips(){
+  $("chips").innerHTML="";
+  chipsL.forEach(c=>{
+    const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=c;b.setAttribute("aria-pressed",String(c===cur));
+    b.onclick=()=>{cur=c;renderChips();reset()};
+    $("chips").appendChild(b);
+  });
+}
+renderChips();
+$("dl").onchange=reset;
+$("dt").value=MY.join("\n");
+$("dt").oninput=e=>{MY=e.target.value.split("\n").map(x=>x.trim()).filter(Boolean);sv("qs2",MY);if(cur==="我的题库")qp=[]};
+$("dd").onclick=()=>{
+  if(db)return;
+  const base=allQ();
+  if(!base.length){$("dq").textContent="这个范围还没有题,换个类型或在下面添加";$("dc").textContent="";return}
+  db=true;
+  if(!qp.length)qp=shuffle(base.slice());
+  const t=qp.pop(),el=$("dq");el.classList.remove("hit");$("dc").textContent="";
+  let d=60;
+  (function tick(){
+    el.textContent=base[Math.floor(Math.random()*base.length)].t;d*=1.22;
+    if(d<380)setTimeout(tick,d);
+    else{el.textContent=t.t;$("dc").textContent=t.c+(t.l?"  "+"★".repeat(t.l)+"☆".repeat(3-t.l):"");el.classList.add("hit");db=false}
+  })();
+};
+
+/* 倒计时 */
+let mins=5,left=300000,end=0,run=false,iv=null;
+const pad=n=>String(n).padStart(2,"0");
+const fmt=ms=>{const s=Math.ceil(ms/1000);return pad(Math.floor(s/60))+":"+pad(s%60)};
+[[1,"1 分钟"],[3,"3 分钟"],[5,"眼保健操 5 分钟"],[10,"课间 10 分钟"],[15,"课堂小测 15 分钟"],[40,"一节课 40 分钟"]].forEach(([m,l])=>{const b=document.createElement("button");b.type="button";b.className="btn";b.textContent=l;b.onclick=()=>setMin(m);$("pre").appendChild(b)});
+function setMin(m){mins=m;left=m*60000;stop();$("tm").textContent=fmt(left);$("tm").classList.remove("done");$("ts").textContent="开始"}
+function stop(){run=false;clearInterval(iv)}
+$("cs").onclick=()=>{const m=parseInt($("cm").value);if(m>0)setMin(Math.min(m,180))};
+$("tr").onclick=()=>setMin(mins);
+$("ts").onclick=()=>{
+  if(run){left=end-Date.now();stop();$("ts").textContent="继续";return}
+  if(left<=0)left=mins*60000;
+  $("tm").classList.remove("done");end=Date.now()+left;run=true;$("ts").textContent="暂停";
+  iv=setInterval(()=>{
+    const l=end-Date.now();
+    if(l<=0){stop();left=0;$("tm").textContent="00:00";$("tm").classList.add("done");$("ts").textContent="开始";beep(3)}
+    else $("tm").textContent=fmt(l);
+  },200);
+};
+
+/* 计分 */
+let T=ld("teams",null);
+if(!T)T=[1,2,3,4].map(i=>({n:"第"+i+"组",s:0}));
+for(let i=2;i<=12;i++){const o=document.createElement("option");o.value=i;o.textContent=i;$("tn").appendChild(o)}
+$("tn").value=T.length;
+function renderT(){
+  const mx=Math.max(...T.map(t=>t.s));
+  $("teams").innerHTML="";
+  T.forEach((t,i)=>{
+    const d=document.createElement("div");d.className="t"+(mx>0&&t.s===mx?" lead":"");
+    d.innerHTML='<input aria-label="组名" value="'+esc(t.n).replace(/"/g,"&quot;")+'"><div class="sc">'+t.s+'</div><div class="r"><button type="button">−1</button><button type="button">+1</button><button type="button">+5</button></div>';
+    d.querySelector("input").oninput=e=>{t.n=e.target.value;sv("teams",T)};
+    const bs=d.querySelectorAll("button");
+    [-1,1,5].forEach((v,j)=>bs[j].onclick=()=>{t.s+=v;sv("teams",T);renderT()});
+    $("teams").appendChild(d);
+  });
+}
+$("tn").onchange=()=>{const n=+$("tn").value;while(T.length<n)T.push({n:"第"+(T.length+1)+"组",s:0});T=T.slice(0,n);sv("teams",T);renderT()};
+$("sr").onclick=()=>{T.forEach(t=>t.s=0);sv("teams",T);renderT()};
+renderT();
+
+/* 倒数日 + 今日寄语 */
+let CD=ld("cd",{n:"高考",d:"2027-06-07"});
+function showCD(){
+  const t=new Date(CD.d+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);
+  const days=Math.round((t-n)/864e5);
+  $("cdn").textContent=CD.n||"目标日";$("cdd").textContent=isNaN(days)?"--":Math.max(0,days);
+}
+$("cdname").value=CD.n;$("cddate").value=CD.d;
+$("cdname").oninput=e=>{CD.n=e.target.value;sv("cd",CD);showCD()};
+$("cddate").oninput=e=>{if(e.target.value){CD.d=e.target.value;sv("cd",CD);showCD()}};
+showCD();
+const QT=["会当凌绝顶,一览众山小。——杜甫","业精于勤,荒于嬉;行成于思,毁于随。——韩愈","不积跬步,无以至千里;不积小流,无以成江海。——荀子","纸上得来终觉浅,绝知此事要躬行。——陆游","路漫漫其修远兮,吾将上下而求索。——屈原","天行健,君子以自强不息。——《周易》","莫等闲,白了少年头,空悲切。——岳飞","长风破浪会有时,直挂云帆济沧海。——李白","千里之行,始于足下。——老子","学而不思则罔,思而不学则殆。——孔子","锲而不舍,金石可镂。——荀子","读书破万卷,下笔如有神。——杜甫","问渠那得清如许,为有源头活水来。——朱熹","沉舟侧畔千帆过,病树前头万木春。——刘禹锡","山重水复疑无路,柳暗花明又一村。——陆游","欲穷千里目,更上一层楼。——王之涣","宝剑锋从磨砺出,梅花香自苦寒来。——《警世贤文》","三人行,必有我师焉。——孔子","咬定青山不放松,立根原在破岩中。——郑燮","勿以恶小而为之,勿以善小而不为。——刘备","海纳百川,有容乃大。——林则徐"];
+let qi=Math.floor(Date.now()/864e5)%QT.length;
+const showQ=()=>{$("qt").textContent=QT[qi]};
+showQ();
+$("qt").onclick=()=>{qi=(qi+1)%QT.length;showQ()};
+$("qt").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("qt").onclick()}};
+
+/* 换座位 */
+let seatG=[];
+$("sg").onclick=()=>{
+  if(need())return;
+  const cols=Math.max(1,Math.min(12,parseInt($("scol").value)||6));
+  let rows=Math.max(1,parseInt($("srow").value)||7);
+  rows=Math.max(rows,Math.ceil(R.length/cols));$("srow").value=rows;
+  const a=shuffle(R.slice()),k=+$("saisle").value;
+  seatG=[];
+  for(let r=0;r<rows;r++){const row=a.slice(r*cols,r*cols+cols);while(row.length<cols)row.push("");seatG.push(row)}
+  $("seats").innerHTML='<div class="podium">讲台(第 1 排最靠前)</div>'+seatG.map(row=>'<div class="seatrow">'+row.map((x,c)=>'<div class="seat'+(k&&c>0&&c%k===0?" gap":"")+(x?"":" empty")+'">'+(x?esc(x):"空")+'</div>').join("")+'</div>').join("");
+  $("sc2").hidden=false;$("sg").textContent="重新排座位";
+};
+$("sc2").onclick=async()=>{
+  try{await navigator.clipboard.writeText(seatG.map((r,i)=>"第"+(i+1)+"排:"+r.map(x=>x||"空").join(" ")).join("\n"));$("sc2").textContent="已复制 ✓"}
+  catch(e){$("sc2").textContent="复制失败,请截图"}
+  setTimeout(()=>$("sc2").textContent="复制座位表",1800);
+};
+
+/* 值日表 */
+const DAYS=["周一","周二","周三","周四","周五"];
+let duty=[];
+function renderDuty(){
+  $("dutyg").innerHTML=duty.map((m,i)=>'<div class="g"><h3>'+DAYS[i]+' · '+m.length+'人</h3><p>'+m.map(o=>esc(o.n)+(o.t?"("+esc(o.t)+")":"")).join("、")+'</p></div>').join("");
+  $("dops").hidden=false;
+}
+$("dg").onclick=()=>{
+  if(need())return;
+  const tasks=parse($("dtask").value),a=shuffle(R.slice()),g=Array.from({length:5},()=>[]);
+  a.forEach((x,i)=>g[i%5].push(x));
+  duty=g.map(m=>m.map((x,i)=>({n:x,t:tasks.length?tasks[i%tasks.length]:""})));
+  renderDuty();
+};
+$("dshift").onclick=()=>{if(duty.length){duty.unshift(duty.pop());renderDuty()}};
+$("dswap").onclick=()=>{duty.forEach(m=>{const ts=m.map(o=>o.t);ts.unshift(ts.pop());m.forEach((o,i)=>o.t=ts[i])});renderDuty()};
+$("dcopy").onclick=async()=>{
+  try{await navigator.clipboard.writeText(duty.map((m,i)=>DAYS[i]+":"+m.map(o=>o.n+(o.t?"("+o.t+")":"")).join("、")).join("\n"));$("dcopy").textContent="已复制 ✓"}
+  catch(e){$("dcopy").textContent="复制失败,请截图"}
+  setTimeout(()=>$("dcopy").textContent="复制值日表",1800);
+};
+
+/* 大屏模式 */
+function pres(on){document.body.classList.toggle("present",on);try{if(on&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen();else if(!on&&document.fullscreenElement)document.exitFullscreen()}catch(e){}}
+$("present").onclick=()=>pres(true);$("exit").onclick=()=>pres(false);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.body.classList.remove("present")});
+</script>
+</body>
+</html>
